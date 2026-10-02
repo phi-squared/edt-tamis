@@ -71,7 +71,8 @@ def _git(repo: Path, *args: str, ident: tuple[str, str] | None = None) -> str:
     # validated file name (after `--`, literal), the commit identity (one `-c` argument each)
     # and the target folder (`-C`).
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True,  # noqa: S603
+        # git writes UTF-8 on every platform; the Windows locale (cp1252) must not decide
+        r = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace",  # noqa: S603
                            env=child_env(), timeout=GIT_TIMEOUT_S)
     except subprocess.TimeoutExpired:
         raise PublishError(f"`git {args[0]}` did not finish within {GIT_TIMEOUT_S} s "
@@ -96,9 +97,13 @@ def publish_git(cfg: Config, text: str) -> str:
         return "unchanged"
     ident = (p.get("commit_name", "edt-tamis"), p.get("commit_email", "edt-tamis@localhost"))
     _git(repo, "add", "--", name)
-    # -z: names are printed raw (no quoting of non-ASCII names), NUL-separated
-    staged = _git(repo, "diff", "--cached", "--name-only", "-z").split("\0")
-    others = [f for f in staged if f and f != name]
+    # -z: names are printed raw (no quoting of non-ASCII names), NUL-separated. The names
+    # are never compared with the configured one as text (encodings differ between
+    # platforms): "mine" is whatever git itself reports for that one path.
+    staged = [f for f in _git(repo, "diff", "--cached", "--name-only", "-z").split("\0") if f]
+    mine = {f for f in _git(repo, "diff", "--cached", "--name-only", "-z", "--", name)
+            .split("\0") if f}
+    others = [f for f in staged if f not in mine]
     if others:
         # a plain `git commit` would publish these too (and force-push them)
         raise PublishError(f"other changes are staged in {repo} ({', '.join(others[:3])}"

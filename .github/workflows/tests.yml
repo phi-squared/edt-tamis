@@ -3,9 +3,8 @@ name: tests
 permissions:
   contents: read
 
-# Private repos on the free plan have a monthly Actions allowance (Windows x2, macOS x10).
-# Trimmed to save minutes: pushes only on main, superseded runs cancelled, smaller matrix.
-# Once the repo is public, runs are free: restore the full os x python matrix.
+# The repo is public, so runs are free: full os x python matrix. Pushes only on main
+# (pull requests cover the rest) and superseded runs are cancelled to keep the queue short.
 on:
   push:
     branches: [main]
@@ -21,14 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - {os: ubuntu-latest, python: "3.10"}
-          - {os: ubuntu-latest, python: "3.11"}
-          - {os: ubuntu-latest, python: "3.12"}
-          - {os: ubuntu-latest, python: "3.13"}
-          - {os: windows-latest, python: "3.10"}
-          - {os: windows-latest, python: "3.13"}
-          - {os: macos-latest, python: "3.13"}
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7

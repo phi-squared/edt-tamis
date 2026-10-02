@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+- `publish` (git method) no longer mistakes its own file for "other staged changes" when the file name has non-ASCII characters on Windows; git's output is read as UTF-8 and names are no longer compared as text.
+
+### Changed
+- CI runs the full matrix again (Linux, macOS and Windows, Python 3.10–3.13) now that the repository is public.
+
 ## [0.3.0] - 2026-10-02
 
 First public release. Preparation for sharing the project: three rounds of independent security review and the fixes that came out of them.
