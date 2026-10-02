@@ -3,12 +3,13 @@ name: tests
 permissions:
   contents: read
 
-# The repo is public, so runs are free: full os x python matrix. Pushes only on main
-# (pull requests cover the rest) and superseded runs are cancelled to keep the queue short.
+# The repo is public, so runs are free: full os x python matrix. Pull requests are tested
+# before the squash merge, so there is no second run on main; a weekly run catches changes in
+# runners, Python releases and dependencies. Superseded runs are cancelled.
 on:
-  push:
-    branches: [main]
   pull_request:
+  schedule:
+    - cron: "17 4 * * 1"
   workflow_dispatch:
 
 concurrency:
