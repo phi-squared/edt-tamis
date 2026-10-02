@@ -39,7 +39,7 @@ Simpler tools exist that merge several iCalendar feeds (for example *ics-fusion*
 | Windows | 10 or 11, Python from python.org or the Microsoft Store. **Needs `tzdata`** (Windows has no time-zone database): `pip install .` installs it, or `python -m pip install tzdata` |
 | optional | `git` for `publish` with method `git`; Tailscale for the private multi-device setup |
 
-The test suite runs on Linux, macOS and Windows with Python 3.10–3.13 (a reduced matrix while the repo is private) on every pull request and push to main (`.github/workflows/tests.yml`). To check a machine yourself: `python -m unittest discover -s tests`.
+The test suite runs on Linux, macOS and Windows with Python 3.10–3.13 on every pull request and push to main (`.github/workflows/tests.yml`). To check a machine yourself: `python -m unittest discover -s tests`.
 
 ---
 
