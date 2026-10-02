@@ -1,0 +1,67 @@
+name: tests
+
+permissions:
+  contents: read
+
+# Private repos on the free plan have a monthly Actions allowance (Windows x2, macOS x10).
+# Trimmed to save minutes: pushes only on main, superseded runs cancelled, smaller matrix.
+# Once the repo is public, runs are free: restore the full os x python matrix.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: "3.10"}
+          - {os: ubuntu-latest, python: "3.11"}
+          - {os: ubuntu-latest, python: "3.12"}
+          - {os: ubuntu-latest, python: "3.13"}
+          - {os: windows-latest, python: "3.10"}
+          - {os: windows-latest, python: "3.13"}
+          - {os: macos-latest, python: "3.13"}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: install
+        run: python -m pip install .
+      - name: unit tests
+        run: python -m unittest discover -s tests -v
+      - name: smoke test of the installed command
+        run: |
+          tamis --version
+          tamis -c config-smoke.toml init
+          tamis -c config-smoke.toml urls
+          tamis -c config-smoke.toml service --mode serve
+
+  lint-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - name: install tools
+        run: python -m pip install -r .github/requirements-lint.txt
+      - name: ruff (E, F, B, S rules)
+        run: ruff check tamis tests
+      - name: bandit (medium and above)
+        run: bandit -r tamis -ll
+      - name: pip-audit (dependencies of the package)
+        run: pip-audit .

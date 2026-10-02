@@ -1,0 +1,14 @@
+# personal data - never commit
+config.toml
+auth.txt
+*.ics
+!tests/fixtures/*.ics
+raw/
+
+# build / cache
+__pycache__/
+*.egg-info/
+build/
+dist/
+.venv/
+.DS_Store

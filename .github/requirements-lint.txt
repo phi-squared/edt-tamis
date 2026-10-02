@@ -1,0 +1,4 @@
+# Pinned so the security job cannot change under us; Dependabot proposes updates.
+ruff==0.16.9
+bandit==1.9.4
+pip-audit==2.10.1

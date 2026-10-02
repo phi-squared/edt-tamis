@@ -1,0 +1,140 @@
+# edt-tamis configuration
+# ---------------------------------------------------------------------------
+# Copy with `python -m tamis init` (to ~/.config/edt-tamis/config.toml, or
+# %APPDATA%\edt-tamis\config.toml on Windows),
+# then fill in three things:
+#   1. [settings] project_id       - the ADE project (changes every academic year)
+#   2. [[sources]] resources       - the ADE ids of the groups/programmes you follow
+#   3. [[courses]]                 - which courses you actually take
+# Check your work with:  urls  ->  titles  ->  report
+# Relative paths in this file are relative to this file.
+
+[settings]
+calendar_name   = "My timetable"        # name shown in the calendar app
+timezone        = "Europe/Paris"
+
+# ADE export endpoint. Unistra's is the default; other universities running
+# ADE have the same path on their own host.
+ade_url         = "https://adecons.unistra.fr/jsp/custom/modules/plannings/anonymous_cal.jsp"
+project_id      = 7                     # the `projectId=` value in any export link
+
+on_conflict     = "mark"                # clash loser: "mark" (keep, greyed out) or "drop"
+mute_prefix     = "· "                  # prepended to greyed-out events
+exam_pattern    = "examen|soutenance|partiel|rattrapage"   # these are never greyed out
+
+cache_minutes   = 20                    # reuse downloads this long (CLI commands)
+# data_dir      = "..."                 # default: per-user data folder (see README)
+
+# --- used by `serve` and `publish --watch` ------------------------------------
+refresh_minutes = 120                   # how often the server re-downloads from ADE
+port            = 8765
+bind            = "127.0.0.1"           # keep local; expose with `tailscale serve`
+url_path        = "calendar.ics"        # a long random name adds nothing on a tailnet,
+                                        # but helps if you ever expose it more widely
+# --- knowing when it breaks (see README, "Knowing when it breaks") ------------
+stale_after_hours = 12                  # older data -> a warning event on today's date
+watchdog_days     = 0                   # e.g. 3: an event always 3 days ahead; if it ever
+                                        # reaches today, your device stopped getting updates
+# alert_command = ["osascript", "-e", "display notification (system attribute \"TAMIS_ALERT\") with title \"edt-tamis\""]
+# alert_command = ["curl", "-s", "-d", "{message}", "https://ntfy.sh/<long-random-topic>"]
+#                                       # runs once when data goes stale and once when it recovers;
+#                                       # the text is in $TAMIS_ALERT and replaces {message}
+
+# auth_file     = "auth.txt"            # optional: one line `user:password`, chmod 600
+# allowed_hosts = ["mymac.tailnet-name.ts.net"]   # needed without a password when a proxy such as
+#                                       # `tailscale serve` forwards its own host name (README)
+# output_file   = "calendar.ics"        # default: in the per-user data folder
+# refresh_hint_hours = 2                # adds REFRESH-INTERVAL to the feed (some clients honour it)
+
+# ---------------------------------------------------------------------------
+# PUBLIC publishing - only for `publish`. Leave commented out to stay private.
+# Anyone who learns the resulting URL can read your timetable. See README.
+#
+# [publish]
+# method       = "git"            # "git": commit + push to a repo or gist clone
+#                                 # "dir": just write the file into a folder
+# target       = "~/edt-feed"     # the git clone, or the folder
+# file_name    = "calendar.ics"   # a plain file name (no folders); for a public repo, use
+#                                #   `python -m tamis secret`
+# keep_history = false            # git: keep only ONE commit (no archive of past weeks)
+# commit_name  = "edt-tamis"    # git: author on feed commits (keeps your e-mail out)
+# commit_email = "edt-tamis@localhost"
+# public_url   = "https://gist.githubusercontent.com/<user>/<gist-id>/raw/calendar.ics"
+
+# ---------------------------------------------------------------------------
+# Observation period - applies to every source. Any nbWeeks=/firstDate=/lastDate=
+# in a pasted URL is thrown away and replaced by this.
+#   absolute:  "2026-09-01"
+#   relative:  "today", "-2w", "+30d", "today+20w"
+[period]
+start = "2026-09-01"
+end   = "2027-02-28"            # include January exams / end-of-semester soutenances
+# start = "today-1w"            # rolling window instead
+# end   = "today+20w"
+
+# ---------------------------------------------------------------------------
+# Sources. Two ways to specify one:
+#
+#   resources = [12345, 12346]   ADE ids; in the ADE tree, hovering a group shows
+#                                `javascript:check(<id>, ...)`. Several ids in one
+#                                source = one download.
+#   url = "https://...anonymous_cal.jsp?resources=12345&projectId=7&calType=ical&nbWeeks=4"
+#                                just paste the export link; its time window is replaced.
+#   file = "raw/m1.ics"          a manually downloaded file (fallback, no updates)
+#
+# It is fine for sources to overlap: events are de-duplicated by UID.
+
+[[sources]]
+name      = "M1 programme, TD group 1"
+resources = [12345]
+
+[[sources]]
+name      = "M2 programme"
+resources = [23456, 23457]
+
+[[sources]]
+name = "pasted link example"
+url  = "https://adecons.unistra.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=34567&projectId=7&calType=ical&nbWeeks=4"
+
+# ---------------------------------------------------------------------------
+# Courses to keep. `match` is a regex tested against the event title, accent-
+# and case-insensitive ("controle optimal" matches "Contrôle Optimal S3").
+# Run `python -m tamis titles` to see every title your sources contain.
+#
+#   priority    higher wins when two kept events overlap (default 50)
+#   attend      false = grey out every session but keep exams solid
+#   skip_slots  grey out one weekly slot, e.g. ["Fri 13:30-15:30"]
+#   skip_match  remove individual sessions whose title matches (never exams)
+#   on_conflict override the global setting for this course
+
+[[courses]]
+label    = "Stochastic calculus"
+match    = "calcul stochastique"
+priority = 90
+
+[[courses]]
+label    = "Differential geometry"
+match    = "geometrie differentielle"
+priority = 80
+# skip_match = ["\\btd\\b"]            # e.g. lectures only
+
+[[courses]]
+label      = "Data analysis"
+match      = "analyse de donnees"
+priority   = 40
+# skip_slots = ["Fri 13:30-15:30"]
+
+[[courses]]
+label    = "C++"
+match    = "^c\\+\\+"                   # TOML strings: double the backslashes
+priority = 10
+attend   = false                        # only the exam matters
+
+# ---------------------------------------------------------------------------
+# Remove matching events everywhere (checked before courses; never exams).
+
+[[drop]]
+match = "reunion d'information"
+
+# [[drop]]
+# match = "seminaire"

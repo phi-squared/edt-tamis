@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edt-tamis"
+dynamic = ["version"]
+description = "One iCalendar feed with only your university courses, built from ADE timetable exports."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "tomli>=1.1; python_version < '3.11'",   # tomllib backport
+    "tzdata; sys_platform == 'win32'",       # Windows ships no time-zone database
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Topic :: Office/Business :: Scheduling",
+]
+
+[project.scripts]
+tamis = "tamis.cli:main"
+
+[tool.setuptools]
+packages = ["tamis"]
+
+[tool.setuptools.dynamic]
+version = { attr = "tamis.__version__" }
+
+[tool.setuptools.package-data]
+tamis = ["config.example.toml"]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "S"]   # S = flake8-bandit security rules
+ignore = ["E501"]               # line length is not a security matter
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106", "S310", "S603", "S607"]  # asserts, fake passwords, local test servers, git
