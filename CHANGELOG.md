@@ -4,7 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-Preparation for sharing the project: three rounds of independent security review and the fixes that came out of them.
+## [0.3.0] - 2026-10-02
+
+First public release. Preparation for sharing the project: three rounds of independent security review and the fixes that came out of them.
 
 ### Security
 - Downloads: 10 MB size cap, one 120 s deadline for connect, headers, redirects and body, at most 5 redirects, http(s) only, no https→http, no redirect to private or local addresses (including unusual spellings such as `127.1` or `%31%32%37.0.0.1`), cap of 5000 events per source.

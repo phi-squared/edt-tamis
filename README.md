@@ -16,7 +16,7 @@ If you take courses from several programmes, you end up with several noisy calen
 
 ## Quick start
 
-1. Install it (no admin rights needed): `uv tool install git+https://github.com/phi-squared/edt-tamis` — or see [1. Install and configure](#1-install-and-configure) for pipx.
+1. Install it (no admin rights needed): `uv tool install git+https://github.com/phi-squared/edt-tamis@v0.3.0` — or see [1. Install and configure](#1-install-and-configure) for pipx.
 2. `tamis init` creates your config and prints where it is. Open it and fill in your ADE resource ids and your courses ([Finding your ADE ids](#finding-your-ade-ids), [Writing course rules](#writing-course-rules)).
 3. `tamis status` downloads every source once and tells you whether it works; `tamis report` shows what was kept, greyed out and what clashes.
 4. Get the calendar onto your devices: `tamis build -o timetable.ics` for a one-off file, or `tamis serve` for a feed that updates itself ([3. Private: `serve`](#3-private-serve-recommended)).
@@ -51,7 +51,8 @@ cd ~/edt-tamis
 
 # either: install the `tamis` command in its own environment
 uv tool install .         # no admin rights needed; get uv: https://docs.astral.sh/uv/ (or `brew install uv`)
-# or, from a fresh machine without cloning:  uv tool install git+https://github.com/phi-squared/edt-tamis
+# or, from a fresh machine without cloning:  uv tool install git+https://github.com/phi-squared/edt-tamis@v0.3.0
+#   upgrade later: the same command with the newer tag and `--force`
 pipx install .            # get pipx: `brew install pipx` / `sudo apt install pipx` / `py -m pip install --user pipx`
 
 # or: run it in place without installing (Python 3.11+; Windows first needs `py -m pip install tzdata`)
