@@ -17,7 +17,7 @@ from tamis.server import make_server
 
 from helpers import TempDir, make_config
 
-SECRET = "s3cr3t-path-9x7q.ics"
+HIDDEN_PATH = "hidden-path-for-tests.ics"  # dummy test value, not a real credential
 
 
 class ServerCase(unittest.TestCase):
@@ -132,21 +132,21 @@ class AuthTests(ServerCase):
 class SecretPathTests(ServerCase):
     def test_secret_path_is_not_logged(self):
         with self.assertLogs("tamis", "INFO") as cm:
-            self.start(url_path=SECRET, verbose=True)
-            self.assertEqual(self.get("/" + SECRET)[0], 200)
+            self.start(url_path=HIDDEN_PATH, verbose=True)
+            self.assertEqual(self.get("/" + HIDDEN_PATH)[0], 200)
             self.assertEqual(self.get("/wrong")[0], 404)
         text = "\n".join(cm.output)
-        self.assertNotIn(SECRET, text)
+        self.assertNotIn(HIDDEN_PATH, text)
         self.assertIn("/<path>", text)
         self.assertIn("/<secret path>", text)
 
     def test_new_secret_path_is_picked_up_on_reload(self):
         self.cfg_path.write_text(self.cfg_path.read_text().replace(
-            "project_id    = 7", f'project_id    = 7\nurl_path = "{SECRET}"', 1))
+            "project_id    = 7", f'project_id    = 7\nurl_path = "{HIDDEN_PATH}"', 1))
         srv = self.start()
-        self.assertEqual(self.get("/" + SECRET)[0], 404)
+        self.assertEqual(self.get("/" + HIDDEN_PATH)[0], 404)
         srv.reload_security()
-        self.assertEqual(self.get("/" + SECRET)[0], 200)
+        self.assertEqual(self.get("/" + HIDDEN_PATH)[0], 200)
         self.assertEqual(self.get("/calendar.ics")[0], 404)
 
 

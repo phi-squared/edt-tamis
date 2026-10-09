@@ -368,7 +368,8 @@ def make_server(cfg: Config, *, port: int | None = None, bind: str | None = None
         log.warning("WARNING: listening on %s: the password travels unencrypted (HTTP Basic) "
                     "unless a TLS-terminating proxy is in front.", bind)
     host, real_port = srv.server_address[:2]
-    shown = sec.url_path if sec.url_path == "/calendar.ics" else "/<secret path>"
+    # Both branches are literals so the (possibly secret) url_path never reaches the log.
+    shown = "/calendar.ics" if sec.url_path == "/calendar.ics" else "/<secret path>"
     log.info("serving http://%s:%s%s  (refresh every %g min%s)", host, real_port, shown,
              minutes, ", basic auth on" if sec.expected else "")
     return srv, feed, stop
